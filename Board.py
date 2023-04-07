@@ -1,4 +1,5 @@
 import copy
+from copy import deepcopy
 
 #converter lista para string
 #facilita para representar o jogo
@@ -11,6 +12,7 @@ class Board:
         self.list=[4,4,4,4,4,4,4,4,4,4,4,4]
         self.mancalas=[0,0]
         self.num_mov = 0
+        self.last=None
 
     def __str__(self):
         list_aux=convert_str(self.list)
@@ -30,6 +32,33 @@ class Board:
                     list_aux[0].rjust(2, '0'),list_aux[1].rjust(2, '0'),list_aux[2].rjust(2, '0'),
                     list_aux[3].rjust(2, '0'), list_aux[4].rjust(2, '0'),list_aux[5].rjust(2, '0'))
         return text
+    
+    def possible_moves(self,jog):  
+        list=[]
+        moves1=[]
+        moves2=[]
+        if jog==1:
+            for i in range (6):
+                if self.list[i] != 0:
+                    list.append(i)
+        elif jog==2:
+            for i in range (6,12):
+                if self.list[i] != 0:
+                    list.append(i)
+        for j in list:
+            if jog==1:
+                board = deepcopy(self)
+                board.move(1,j)
+                moves1.append(board)
+            elif jog==2:
+                board = deepcopy(self)
+                board.move(2,j)
+                moves2.append(board)
+        if jog==1:
+            return moves1
+        elif jog==2:
+            return moves2
+    
 
     #Diz se o jogo já acabou
     def fim_jogo(self):
@@ -117,3 +146,13 @@ class Board:
             if zeros == 6:
                 return True
         return False
+    
+    #def utility(self):
+    #    mancala_atual=0
+    #    mancala_oponente=0
+    #    for i in range(2):
+    #        list2 = self.mancalas[2]
+    #        mancala_atual += list2[i]
+    #        list1 = self.mancalas[1]
+    #        mancala_oponente += list1[i]
+    #    return mancala_atual - mancala_oponente
