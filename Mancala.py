@@ -1,39 +1,51 @@
 from Board import *
 import sys
 
-#retorna a melhor jogada possível com minimax
-def minimax(mancala, dificuldade):
-    _ , move = MAX(mancala,dificuldade)
+#retorna a melhor jogada possível com minimax com cortes alfa-beta
+def minimax(jog, mancala, dificuldade):
+    alfa = float("-inf")
+    beta = float("inf")
+    _ , move = maximo(jog, mancala, dificuldade, alfa, beta, move=None)
     return move
 
-def MAX(mancala,dificuldade):
-    move=None
-    if mancala.fim_jogo() or dificuldade==0:
-        move=mancala.last
-        return mancala.utility(2),move
-    
+def maximo(jog, mancala, dificuldade, alfa, beta, move):
+    if mancala.fim_jogo()!=-1 or dificuldade==0 or len(mancala.possible_moves(jog))==0:
+        mancala_cp = deepcopy(mancala)
+        mancala_cp.move(jog,move)
+        return mancala_cp.utility(jog),move
+
     max_value = float("-inf")
-    for s in mancala.possible_moves():
-        value, _ = MIN(s, dificuldade - 1)
+    for s in mancala.possible_moves(jog):
+        mancala_cp = deepcopy(mancala)
+        mancala_cp.move(jog,s)
+        value, _ = minimo(jog, mancala_cp, dificuldade - 1, alfa, beta, s)
         if  value>max_value:
             max_value=value
-            move=s.last
-    
+            move=s
+        alfa = max(alfa, max_value)
+        if alfa >= beta:
+            break
+
     return max_value,move
 
-def MIN(mancala,dificuldade):
-    move=None
-    if mancala.fim_jogo() or dificuldade==0:
-        move=mancala.last
-        return mancala.utility(1),move
+def minimo(jog, mancala, dificuldade, alfa, beta, move):
+    if mancala.fim_jogo()!=-1 or dificuldade==0 or len(mancala.possible_moves(jog))==0:
+        mancala_cp = deepcopy(mancala)
+        mancala_cp.move(jog,move)
+        return mancala_cp.utility(jog),move
 
     min_value = float("inf")
-    for s in mancala.possible_moves():
-        value, _ = MAX(s, dificuldade - 1)
+    for s in mancala.possible_moves(jog):
+        mancala_cp = deepcopy(mancala)
+        mancala_cp.move(jog,s)
+        value, _ = maximo(jog, mancala_cp, dificuldade - 1, alfa, beta, s)
         if value<min_value:
             min_value=value
-            move = s.last
-            
+            move = s
+        beta = min(beta, min_value)
+        if beta <= alfa:
+            break
+
     return min_value,move
 
 #retorna a melhor jogada possível com montecarlo
@@ -48,8 +60,6 @@ def hum_hum(mancala):
         if (mancala.jogada_impossivel(jog)):
             jog = mancala.troca_jog(jog)
         print('Jogador %d:'%jog)
-        #for i in mancala.possible_moves(jog):
-        #    print(i)
         prox_jog = jog
         while prox_jog == jog and mancala.jogada_impossivel(jog)==False:
             print('Escolha a posição em que quer jogar:')
@@ -69,23 +79,21 @@ def hum_hum(mancala):
             prox_jog = mancala.move(jog, pos)
             if prox_jog == jog and mancala.jogada_impossivel(jog)==False:
                 print(mancala)
-                print('É o jogador %d a jogar outra vez' %jog)
+                print('É o jogador %d a jogar outra vez.' %jog)
         jog = prox_jog
     print('O jogo acabou.')
     if (mancala.fim_jogo() == 0):
         print('Empate.')
     else:
-        print('O vencedor foi o jogador %d' %mancala.fim_jogo())
+        print('O vencedor foi o jogador %d.' %mancala.fim_jogo())
     print('Número total de jogadas: %d' %mancala.num_mov)
     sys.exit()
 
 #Jogada Humano vs Computador
 def hum_comp(mancala, estrategia, dificuldade):
     jog = 1
+    print(mancala)
     while mancala.fim_jogo() == -1:
-        print(mancala)
-        if (mancala.jogada_impossivel(jog)):
-            jog = mancala.troca_jog(jog)
         print('Jogador %d:'%jog)
         prox_jog = jog
         while prox_jog == 1 and mancala.jogada_impossivel(jog)==False:
@@ -94,71 +102,82 @@ def hum_comp(mancala, estrategia, dificuldade):
             while pos>11 or pos<0:
                 print('Posição Inválida. Insira outra posição.')
                 pos = int(input())
-            while pos>5 and jog == 1:
-                print('Não é possível jogar na posição do adversário. Insira outra posição.')
-                pos = int(input())
-            while pos<6 and jog == 2:
+            while (pos>5 and jog == 1) or (pos<6 and jog == 2):
                 print('Não é possível jogar na posição do adversário. Insira outra posição.')
                 pos = int(input())
             while mancala.list[pos] == 0:
                 print('Não é possível jogar numa posição com 0 peças. Insira outra posição.')
                 pos = int(input())
             prox_jog = mancala.move(jog, pos)
+            print(mancala)
             if prox_jog == jog and mancala.jogada_impossivel(jog)==False:
-                print(mancala)
-                print('É o jogador %d a jogar outra vez' %jog)
+                print('É o jogador %d a jogar outra vez.' %jog)
         jog = prox_jog
+        print('Jogador %d:'%jog)
+
         while prox_jog == 2 and mancala.jogada_impossivel(jog)==False:
             if estrategia == 1:
-                melhor_jogada = minimax(mancala, dificuldade)
+                melhor_jogada = minimax(jog, mancala, dificuldade)
             if estrategia == 2:
                 melhor_jogada = montecarlo(mancala, dificuldade)
+            print('Posição escolhida: %d' %melhor_jogada)
             prox_jog = mancala.move(jog, melhor_jogada)
+            print(mancala)
             if prox_jog == jog and mancala.jogada_impossivel(jog)==False:
-                print(mancala)
-                print('É o jogador %d a jogar outra vez' %jog)
+                print('É o jogador %d a jogar outra vez.' %jog)
         jog = prox_jog
     print('O jogo acabou.')
     if (mancala.fim_jogo() == 0):
         print('Empate.')
     else:
-        print('O vencedor foi o jogador %d' %mancala.fim_jogo())
-    print('Número total de movimentos: %d' %mancala.num_mov)
+        print('O vencedor foi o jogador %d.' %mancala.fim_jogo())
+    print('Número total de jogadas: %d' %mancala.num_mov)
     sys.exit()
 
 #Jogada Computador vs Computador
 def comp_comp(mancala, estrategia1, estrategia2, dificuldade):
     jog = 1
+    print(mancala)
     while mancala.fim_jogo() == -1:
-        print(mancala)
-        if (mancala.jogada_impossivel(jog)):
-            jog = mancala.troca_jog(jog)
         print('Jogador %d:'%jog)
+        prox_jog = jog
         while prox_jog == 1 and mancala.jogada_impossivel(jog)==False:
             if estrategia1 == 1:
-                melhor_jogada = minimax(mancala, dificuldade)
+                melhor_jogada = minimax(jog, mancala, dificuldade)
             if estrategia1 == 2:
                 melhor_jogada = montecarlo(mancala, dificuldade)
+            print('Posição escolhida: %d' %melhor_jogada)
             prox_jog = mancala.move(jog, melhor_jogada)
+            print(mancala)
+            #if mancala.soma() != 48:
+                #print("soma:", mancala.soma())
+                #print('ERRO')
+                #sys.exit()
             if prox_jog == jog and mancala.jogada_impossivel(jog)==False:
-                print(mancala)
-                print('É o jogador %d a jogar outra vez' %jog)
+                print('É o jogador %d a jogar outra vez.' %jog)
+        jog = prox_jog
+        print('Jogador %d:'%jog)
         while prox_jog == 2 and mancala.jogada_impossivel(jog)==False:
             if estrategia2 == 1:
-                melhor_jogada = minimax(mancala, dificuldade)
+                melhor_jogada = minimax(jog, mancala, dificuldade)
             if estrategia2 == 2:
                 melhor_jogada = montecarlo(mancala, dificuldade)
+            print('Posição escolhida: %d' %melhor_jogada)
             prox_jog = mancala.move(jog, melhor_jogada)
+            print(mancala)
+            #if mancala.soma() != 48:
+                #print("soma:", mancala.soma())
+                #print('ERRO')
+                #sys.exit()
             if prox_jog == jog and mancala.jogada_impossivel(jog)==False:
-                print(mancala)
-                print('É o jogador %d a jogar outra vez' %jog)
+                print('É o jogador %d a jogar outra vez.' %jog)
         jog = prox_jog
     print('O jogo acabou.')
     if (mancala.fim_jogo() == 0):
         print('Empate.')
     else:
-        print('O vencedor foi o jogador %d' %mancala.fim_jogo())
-    print('Número total de movimentos: %d' %mancala.num_mov)
+        print('O vencedor foi o jogador %d.' %mancala.fim_jogo())
+    print('Número total de jogadas: %d' %mancala.num_mov)
     sys.exit()
 
 
