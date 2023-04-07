@@ -3,7 +3,38 @@ import sys
 
 #retorna a melhor jogada possível com minimax
 def minimax(mancala, dificuldade):
-    return
+    _ , move = MAX(mancala,dificuldade)
+    return move
+
+def MAX(mancala,dificuldade):
+    move=None
+    if mancala.fim_jogo() or dificuldade==0:
+        move=mancala.last
+        return mancala.utility(2),move
+    
+    max_value = float("-inf")
+    for s in mancala.possible_moves():
+        value, _ = MIN(s, dificuldade - 1)
+        if  value>max_value:
+            max_value=value
+            move=s.last
+    
+    return max_value,move
+
+def MIN(mancala,dificuldade):
+    move=None
+    if mancala.fim_jogo() or dificuldade==0:
+        move=mancala.last
+        return mancala.utility(1),move
+
+    min_value = float("inf")
+    for s in mancala.possible_moves():
+        value, _ = MAX(s, dificuldade - 1)
+        if value<min_value:
+            min_value=value
+            move = s.last
+            
+    return min_value,move
 
 #retorna a melhor jogada possível com montecarlo
 def montecarlo(mancala, dificuldade):
@@ -17,6 +48,8 @@ def hum_hum(mancala):
         if (mancala.jogada_impossivel(jog)):
             jog = mancala.troca_jog(jog)
         print('Jogador %d:'%jog)
+        #for i in mancala.possible_moves(jog):
+        #    print(i)
         prox_jog = jog
         while prox_jog == jog and mancala.jogada_impossivel(jog)==False:
             print('Escolha a posição em que quer jogar:')
@@ -80,7 +113,7 @@ def hum_comp(mancala, estrategia, dificuldade):
                 melhor_jogada = minimax(mancala, dificuldade)
             if estrategia == 2:
                 melhor_jogada = montecarlo(mancala, dificuldade)
-            prox_jog = mancala.move(jog, mellhor_jogada)
+            prox_jog = mancala.move(jog, melhor_jogada)
             if prox_jog == jog and mancala.jogada_impossivel(jog)==False:
                 print(mancala)
                 print('É o jogador %d a jogar outra vez' %jog)
@@ -106,7 +139,7 @@ def comp_comp(mancala, estrategia1, estrategia2, dificuldade):
                 melhor_jogada = minimax(mancala, dificuldade)
             if estrategia1 == 2:
                 melhor_jogada = montecarlo(mancala, dificuldade)
-            prox_jog = mancala.move(jog, mellhor_jogada)
+            prox_jog = mancala.move(jog, melhor_jogada)
             if prox_jog == jog and mancala.jogada_impossivel(jog)==False:
                 print(mancala)
                 print('É o jogador %d a jogar outra vez' %jog)
@@ -115,7 +148,7 @@ def comp_comp(mancala, estrategia1, estrategia2, dificuldade):
                 melhor_jogada = minimax(mancala, dificuldade)
             if estrategia2 == 2:
                 melhor_jogada = montecarlo(mancala, dificuldade)
-            prox_jog = mancala.move(jog, mellhor_jogada)
+            prox_jog = mancala.move(jog, melhor_jogada)
             if prox_jog == jog and mancala.jogada_impossivel(jog)==False:
                 print(mancala)
                 print('É o jogador %d a jogar outra vez' %jog)
