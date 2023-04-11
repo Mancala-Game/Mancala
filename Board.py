@@ -1,4 +1,3 @@
-import copy
 from copy import deepcopy
 import sys
 
@@ -129,7 +128,8 @@ class Board:
                 return True
         return False
 
-    def utility(self, jog):
+    #função utilidade
+    def utilidade(self, jog):
         mancala_atual = self.mancalas[jog-1]
         if jog==1:
             outro_jog = 2
@@ -148,7 +148,8 @@ class Board:
         else:
             return mancala_atual - mancala_oponente
 
-    def possible_moves(self,jog):
+    #retorna uma lista com as jogadas possiveis do jogador
+    def movimentos_possivies(self,jog):
         list=[]
         moves1=[]
         moves2=[]
