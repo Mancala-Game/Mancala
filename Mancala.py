@@ -1,4 +1,5 @@
 from Board import *
+from montecarlo import *
 import sys
 
 #retorna a melhor jogada possível com minimax com cortes alfa-beta
@@ -8,14 +9,15 @@ def minimax(jog, mancala, dificuldade):
     _ , move = maximo(jog, mancala, dificuldade, alfa, beta, move=None)
     return move
 
+#função maximo para o minimax
 def maximo(jog, mancala, dificuldade, alfa, beta, move):
-    if mancala.fim_jogo()!=-1 or dificuldade==0 or len(mancala.possible_moves(jog))==0:
+    if mancala.fim_jogo()!=-1 or dificuldade==0 or len(mancala.movimentos_possivies(jog))==0:
         mancala_cp = deepcopy(mancala)
         mancala_cp.move(jog,move)
-        return mancala_cp.utility(jog),move
+        return mancala_cp.utilidade(jog),move
 
     max_value = float("-inf")
-    for s in mancala.possible_moves(jog):
+    for s in mancala.movimentos_possivies(jog):
         mancala_cp = deepcopy(mancala)
         mancala_cp.move(jog,s)
         value, _ = minimo(jog, mancala_cp, dificuldade - 1, alfa, beta, s)
@@ -28,14 +30,15 @@ def maximo(jog, mancala, dificuldade, alfa, beta, move):
 
     return max_value,move
 
+#função minimo para o minimax
 def minimo(jog, mancala, dificuldade, alfa, beta, move):
-    if mancala.fim_jogo()!=-1 or dificuldade==0 or len(mancala.possible_moves(jog))==0:
+    if mancala.fim_jogo()!=-1 or dificuldade==0 or len(mancala.movimentos_possivies(jog))==0:
         mancala_cp = deepcopy(mancala)
         mancala_cp.move(jog,move)
-        return mancala_cp.utility(jog),move
+        return mancala_cp.utilidade(jog),move
 
     min_value = float("inf")
-    for s in mancala.possible_moves(jog):
+    for s in mancala.movimentos_possivies(jog):
         mancala_cp = deepcopy(mancala)
         mancala_cp.move(jog,s)
         value, _ = maximo(jog, mancala_cp, dificuldade - 1, alfa, beta, s)
@@ -49,8 +52,17 @@ def minimo(jog, mancala, dificuldade, alfa, beta, move):
     return min_value,move
 
 #retorna a melhor jogada possível com montecarlo
-def montecarlo(mancala, dificuldade):
-    return
+def montecarlo(jog, mancala, dificuldade):
+    mcts = MCTS(mancala, jog)
+    if dificuldade == 1:
+        mcts.search(3)
+    elif dificuldade == 2:
+        mcts.search(6)
+    else:
+        mcts.search(9)
+    best_move = mcts.best_move()
+    return best_move
+
 
 #jogada Humano vs Humano
 def hum_hum(mancala):
@@ -119,7 +131,7 @@ def hum_comp(mancala, estrategia, dificuldade):
             if estrategia == 1:
                 melhor_jogada = minimax(jog, mancala, dificuldade)
             if estrategia == 2:
-                melhor_jogada = montecarlo(mancala, dificuldade)
+                melhor_jogada = montecarlo(jog, mancala, dificuldade)
             print('Posição escolhida: %d' %melhor_jogada)
             prox_jog = mancala.move(jog, melhor_jogada)
             print(mancala)
@@ -145,7 +157,7 @@ def comp_comp(mancala, estrategia1, estrategia2, dificuldade):
             if estrategia1 == 1:
                 melhor_jogada = minimax(jog, mancala, dificuldade)
             if estrategia1 == 2:
-                melhor_jogada = montecarlo(mancala, dificuldade)
+                melhor_jogada = montecarlo(jog, mancala, dificuldade)
             print('Posição escolhida: %d' %melhor_jogada)
             prox_jog = mancala.move(jog, melhor_jogada)
             print(mancala)
@@ -161,7 +173,7 @@ def comp_comp(mancala, estrategia1, estrategia2, dificuldade):
             if estrategia2 == 1:
                 melhor_jogada = minimax(jog, mancala, dificuldade)
             if estrategia2 == 2:
-                melhor_jogada = montecarlo(mancala, dificuldade)
+                melhor_jogada = montecarlo(jog, mancala, dificuldade)
             print('Posição escolhida: %d' %melhor_jogada)
             prox_jog = mancala.move(jog, melhor_jogada)
             print(mancala)
