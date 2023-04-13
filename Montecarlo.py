@@ -109,7 +109,7 @@ class MCTS:
         return melhor_filho.move
 
     #mover
-    def move(self, move):
+    def move(self, move, mancala):
         if move in self.raiz.filhos:
             posicao = move
             mancala.move(self.jog, posicao)
